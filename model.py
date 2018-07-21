@@ -118,10 +118,10 @@ class pix2pix(object):
         self.d__sum = tf.summary.histogram("d_", self.D_)
         self.fake_B_sum = tf.summary.image("fake_B", self.fake_B)
         
-# =============================================================================
-#         self.d_loss_real = tf.redcue_mean(self.real_AB, self.D)
-#         self.d_loss_fake = tf.reduce_mean(self.fake_AB, self.D_)
-# =============================================================================
+        self.d_loss_real = tf.reduce_mean(tf.abs(self.real_AB - self.D))
+        self.d_loss_fake = tf.reduce_mean(tf.abs(self.fake_AB - self.D_))
+        self.d_loss = self.d_loss_real - self.k_t * self.d_loss_fake
+        
         self.d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_logits, labels = tf.ones_like(self.D)))
         self.d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_logits_, labels = tf.zeros_like(self.D_)))
         
@@ -141,7 +141,7 @@ class pix2pix(object):
 # =============================================================================
 #         self.kt_p = self.kt + 0.001*(0.75*self.d_loss_real - self.d_loss_fake)
 # =============================================================================
-        
+        self.m_global = self.d_loss_real + tf.abs(0.75*self.d_loss_real - self.d_loss_fake)#a balance
         self.d_loss_real_sum = tf.summary.scalar("d_loss_real", self.d_loss_real)
         self.d_loss_fake_sum = tf.summary.scalar("d_loss_fake", self.d_loss_fake)
 
